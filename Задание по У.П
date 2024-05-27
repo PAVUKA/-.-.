@@ -1,0 +1,147 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+
+
+class Vegetable
+{
+    public Vegetable(int number, string name, string color)
+    {
+        Name = name;
+        Color = color;
+        Number = number;
+    }
+    public int Number { get; private set; }
+    public string Name { get; private set; }
+    public string Color { get; private set; }
+}
+
+class VegetableDatabase
+{
+    private List<Vegetable> vegetables = new List<Vegetable>();
+    private string filePath = "Овощи.txt";
+
+    public void AddVegetable(string name, string color)
+    {
+        int number = vegetables.Count + 1;
+        vegetables.Add(new Vegetable(number, name, color));
+        SaveData();
+    }
+
+    public void ShowVegetables()
+    {
+        Console.WriteLine("Список овощей:");
+        foreach (var vegetable in vegetables)
+        {
+            Console.WriteLine($"Номер: {vegetable.Number}, Название: {vegetable.Name}, Цвет: {vegetable.Color}");
+        }
+    }
+
+    private void SaveData()
+    {
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            foreach (var vegetable in vegetables)
+            {
+                writer.WriteLine($"{vegetable.Number},{vegetable.Name},{vegetable.Color}");
+            }
+        }
+    }
+
+    public void LoadData()
+    {
+        if (File.Exists(filePath))
+        {
+            string[] lines = File.ReadAllLines(filePath);
+            foreach (string line in lines)
+            {
+                string[] parts = line.Split(',');
+                if (parts.Length == 3)
+                {
+                    int number = int.Parse(parts[0]);
+                    string name = parts[1];
+                    string color = parts[2];
+                    vegetables.Add(new Vegetable(number, name, color));
+                }
+            }
+        }
+    }
+    public void RemoveVegetable(int number)
+    {
+        Vegetable vegetableToRemove = vegetables.Find(v => v.Number == number);
+        if (vegetableToRemove != null)
+        {
+            vegetables.Remove(vegetableToRemove);           
+            SaveData();
+        }
+    }
+
+    
+}
+
+class Program
+{
+
+
+    public const string AddVegetable = "1";
+    public const string ShowVegetables = "2";
+    public const string Exit = "4";
+    public const string Delete = "3";
+
+
+    static void Main()
+
+    {
+        string directiryPath = @"C:\Users\zoz-7\source\repos\ConsoleApp3\ConsoleApp3\bin\Debug";
+        string[] files = Directory.GetFiles(directiryPath, " *.txt");
+
+        VegetableDatabase database = new VegetableDatabase();
+        database.LoadData();
+
+        Console.WriteLine("Программа базы данных овощей");
+        while (true)
+        {
+            foreach (string file in files)
+            {
+                string fileContent = File.ReadAllText(file);
+                Console.WriteLine($"содержание файла{file}");
+                Console.WriteLine(fileContent);
+            }
+
+            Console.WriteLine("Выберите действие:");
+            Console.WriteLine($"{AddVegetable}. Добавить овощ");
+            Console.WriteLine($"{ShowVegetables}. Просмотреть список овощей");
+            Console.WriteLine($"{Delete}. Удаление Овоща");
+            Console.WriteLine($"{Exit}. Выйти");
+
+            string choice = Console.ReadLine();
+            switch (choice)
+            {
+                case AddVegetable:
+                    Console.Write("Введите название овоща: ");
+                    string name = Console.ReadLine();
+                    Console.Write("Введите цвет овоща: ");
+                    string color = Console.ReadLine();
+                    database.AddVegetable(name, color);
+                    break;
+                case ShowVegetables:
+                    database.ShowVegetables();
+                    break;
+                case Delete:
+                    Console.Write("Введите номер овоща для удаления: ");
+                    int numberToDelete = int.Parse(Console.ReadLine());
+                    database.RemoveVegetable(numberToDelete);
+                    break;
+                case Exit:
+                    return;
+                default:
+                    Console.WriteLine("Некорректный выбор.");
+                    break;
+            }
+        }
+    }
+}
